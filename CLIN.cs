@@ -7,11 +7,11 @@ namespace CLIN
 {
     public class Note
     {
-        public string Title { get; set; }
-        public string Content { get; set; }
+        public string Title { get; set; } = string.Empty;
+        public string Content { get; set; } = string.Empty;
         public bool IsPinned { get; set; }
 
-        // Parameterless constructor needed for System.Text.Json deserialization
+        
         public Note() { }
 
         public Note(string title, string content, bool isPinned = false)
@@ -24,58 +24,74 @@ namespace CLIN
 
     class Program
     {
-        // Locked data path to user's home directory (~/.clin_notes.json)
         static string homeFolder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
         static string filepath = Path.Combine(homeFolder, ".clin_notes.json");
 
         static List<Note> AllTasks = new List<Note>();
-        static List<Note> PinnedTasks = new List<Note>();
 
         public static void New(string title, string content)
         {
-            bool found = false;
             foreach (Note note in AllTasks)
             {
                 if (note.Title.Equals(title, StringComparison.OrdinalIgnoreCase))
                 {
                     Console.WriteLine($"Note with title '{title}' already exists.");
-                    found = true;
-                    break;
+                    return;
                 }
             }
-            if (!found)
-            {
-                Note newNote = new Note(title, content);
-                AllTasks.Add(newNote);
-                Console.WriteLine($"Added Note: {title}");
-            }
+
+            AllTasks.Add(new Note(title, content));
+            Console.WriteLine($"Added Note: {title}");
+            SaveDataToDisk();
         }
 
         public static void Pin(string title)
         {
-            bool isFound = false;
-
             foreach (Note note in AllTasks)
             {
                 if (note.Title.Equals(title, StringComparison.OrdinalIgnoreCase))
                 {
                     note.IsPinned = true;
-
-                    if (!PinnedTasks.Contains(note))
-                    {
-                        PinnedTasks.Add(note);
-                    }
-
                     Console.WriteLine($"Pinned Note: {note.Title}");
-                    isFound = true;
-                    break;
+                    SaveDataToDisk();
+                    return;
                 }
             }
 
-            if (!isFound)
+            Console.WriteLine("A note with that title doesn't exist.");
+        }
+
+        public static void Unpin(string title)
+        {
+            foreach (Note note in AllTasks)
             {
-                Console.WriteLine("A note with that title doesn't exist.");
+                if (note.Title.Equals(title, StringComparison.OrdinalIgnoreCase))
+                {
+                    note.IsPinned = false;
+                    Console.WriteLine($"'{note.Title}' has been unpinned.");
+                    SaveDataToDisk();
+                    return;
+                }
             }
+
+            Console.WriteLine("Note with that title doesn't exist.");
+        }
+
+        public static void Delete(string title)
+        {
+            for (int i = 0; i < AllTasks.Count; i++)
+            {
+                if (AllTasks[i].Title.Equals(title, StringComparison.OrdinalIgnoreCase))
+                {
+                    string deletedTitle = AllTasks[i].Title;
+                    AllTasks.RemoveAt(i);
+                    Console.WriteLine($"'{deletedTitle}' has been deleted.");
+                    SaveDataToDisk();
+                    return;
+                }
+            }
+
+            Console.WriteLine("Note with that title doesn't exist.");
         }
 
         public static void View()
@@ -87,78 +103,41 @@ namespace CLIN
             }
 
             Console.WriteLine("Here's all your notes:");
-            for (int i = 0; i < AllTasks.Count; i++)
+            int displayIndex = 1;
+
+            // 1. Display Pinned Notes
+            foreach (Note note in AllTasks)
             {
-                Note task = AllTasks[i];
-                string pinMarker = task.IsPinned ? "[PINNED] " : "";
-                Console.WriteLine($"{i + 1}. {pinMarker}{task.Title}");
+                if (note.IsPinned)
+                {
+                    Console.WriteLine($"{displayIndex}. [PINNED] {note.Title}");
+                    displayIndex++;
+                }
+            }
+
+            
+            foreach (Note note in AllTasks)
+            {
+                if (!note.IsPinned)
+                {
+                    Console.WriteLine($"{displayIndex}. {note.Title}");
+                    displayIndex++;
+                }
             }
         }
 
         public static void Open(string title)
         {
-            bool found = false;
-
             foreach (Note note in AllTasks)
             {
                 if (note.Title.Equals(title, StringComparison.OrdinalIgnoreCase))
                 {
                     Console.WriteLine($"Title: {note.Title}\n\nContent: {note.Content}");
-                    found = true;
-                    break;
+                    return;
                 }
             }
 
-            if (!found)
-            {
-                Console.WriteLine("Note with that title doesn't exist.");
-            }
-        }
-
-        public static void Delete(string title)
-        {
-            bool found = false;
-
-            foreach (Note note in AllTasks)
-            {
-                if (note.Title.Equals(title, StringComparison.OrdinalIgnoreCase))
-                {
-                    AllTasks.Remove(note);
-                    PinnedTasks.Remove(note);
-
-                    Console.WriteLine($"'{note.Title}' has been deleted.");
-                    found = true;
-                    break;
-                }
-            }
-
-            if (!found)
-            {
-                Console.WriteLine("Note with that title doesn't exist.");
-            }
-        }
-
-        public static void Unpin(string title)
-        {
-            bool found = false;
-
-            foreach (Note note in AllTasks)
-            {
-                if (note.Title.Equals(title, StringComparison.OrdinalIgnoreCase))
-                {
-                    note.IsPinned = false;
-                    PinnedTasks.Remove(note);
-
-                    Console.WriteLine($"'{note.Title}' has been unpinned.");
-                    found = true;
-                    break;
-                }
-            }
-
-            if (!found)
-            {
-                Console.WriteLine("Note with that title doesn't exist.");
-            }
+            Console.WriteLine("Note with that title doesn't exist.");
         }
 
         public static void Help()
@@ -178,6 +157,8 @@ namespace CLIN
             CLIN unpin "<title>": unpin a note.
             CLIN delete "<title>": delete a note.
             CLIN help: display this guide.
+
+            Note that every note should have a different title, regardless of capitalization.
             """);
         }
 
@@ -200,15 +181,6 @@ namespace CLIN
                 catch (JsonException)
                 {
                     AllTasks = new List<Note>();
-                }
-
-                PinnedTasks.Clear();
-                foreach (Note note in AllTasks)
-                {
-                    if (note.IsPinned)
-                    {
-                        PinnedTasks.Add(note);
-                    }
                 }
             }
         }
@@ -264,8 +236,6 @@ namespace CLIN
             {
                 Help();
             }
-
-            SaveDataToDisk();
         }
     }
 }
