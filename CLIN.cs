@@ -21,7 +21,8 @@ namespace CLIN
 
     class Program
     {
-        static string filepath = "notes.json";
+        static string homefolder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        static string filepath = Path.Combine(homefolder, ".notes.json");
         static List<Note> AllTasks = new List<Note>();
         static List<Note> PinnedTasks = new List<Note>();
 
