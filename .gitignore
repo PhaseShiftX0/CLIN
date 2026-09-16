@@ -1,3 +1,7 @@
-*.csproj
+bin/
+obj/
+notes.json
+.clin_notes.json
+clin-v1.0-linux-x64.zip*.csproj
 [O-o]bj/
 [B-b]in/
