@@ -11,6 +11,9 @@ namespace CLIN
         public string Content { get; set; }
         public bool IsPinned { get; set; }
 
+        // Parameterless constructor needed for System.Text.Json deserialization
+        public Note() { }
+
         public Note(string title, string content, bool isPinned = false)
         {
             Title = title;
@@ -21,8 +24,10 @@ namespace CLIN
 
     class Program
     {
-        static string homefolder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-        static string filepath = Path.Combine(homefolder, ".notes.json");
+        // Locked data path to user's home directory (~/.clin_notes.json)
+        static string homeFolder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        static string filepath = Path.Combine(homeFolder, ".clin_notes.json");
+
         static List<Note> AllTasks = new List<Note>();
         static List<Note> PinnedTasks = new List<Note>();
 
@@ -176,14 +181,26 @@ namespace CLIN
             """);
         }
 
-        
-
         public static void LoadDataFromDisk()
         {
             if (File.Exists(filepath))
             {
                 string rawJson = File.ReadAllText(filepath);
-                AllTasks = JsonSerializer.Deserialize<List<Note>>(rawJson) ?? new List<Note>();
+
+                if (string.IsNullOrWhiteSpace(rawJson))
+                {
+                    AllTasks = new List<Note>();
+                    return;
+                }
+
+                try
+                {
+                    AllTasks = JsonSerializer.Deserialize<List<Note>>(rawJson) ?? new List<Note>();
+                }
+                catch (JsonException)
+                {
+                    AllTasks = new List<Note>();
+                }
 
                 PinnedTasks.Clear();
                 foreach (Note note in AllTasks)
@@ -211,12 +228,10 @@ namespace CLIN
                 return;
             }
 
-            
             LoadDataFromDisk();
 
             string command = args[0].ToLower();
 
-           
             if (command == "help")
             {
                 Help();
