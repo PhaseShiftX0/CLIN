@@ -2,7 +2,7 @@
 Fast and no clutter notes app that works right in your terminal!
 
 ## Features:
-* **Fast:** Instant binary startup with no runtime overhead.
+* **Fast:** Lightweight CLI designed for quick terminal use.
 * **Simple:** Clean, intuitive command-line interface.
 * **No distractions:** Pure terminal workflow with offline JSON persistence.
 
@@ -10,7 +10,7 @@ Fast and no clutter notes app that works right in your terminal!
 
 ### Requirements:
 **OS:** Linux(x86_64) 
-**No .NET runtime is required as CLIN is a self-contained native executable binary.**
+**No .NET runtime is required as CLIN is distributed as a self-contained executable**
 
 ### Method 1: Install via GitHub Release(Recommended):
 - *This is the simplest way for anyone to install and it works for most people.*
@@ -118,15 +118,17 @@ sudo chmod +x /usr/local/bin/clin
 - *this grants you the global permission to execute the binary.*
 
 ### CLIN crash upon start when user runs the view command:
-- *This can happen when the notes.json file is corrupted or empty(0 bytes).*
+- *If CLIN behaves unexpectedly because of .notes.json, it means that it contains invalid data.*
 - *The error output will a giant dump of errors, but you can tell when it happens*
 
 ### How to fix it:
-- *Run this command to reset your notes.json folder into a valid empty json array:*
+- *Run this command to reset your notes.json file into a valid empty json array:*
 
 ```bash
 echo "[]" > ~/.clin_notes.json
 ```
+
+[!CAUTION] All your previous notes will be reduced to atoms.
 
 ### Important Notes:
 - if  you use zsh instead of bash then every error and command mentioned above will replace "bash" with "zsh" just as you saw in the Permission Denied Error.
@@ -257,7 +259,7 @@ clin unpin "To-do today"
 **output:**
 
 ```text
-'To-do today' has been unpinned.'
+'To-do today' has been unpinned.
 ```
 
 6. **To delete a note:**
@@ -326,7 +328,7 @@ Note that every note should have a different title, regardless of capitalization
 
 ```bash
 clin new "Was CLIN made with tutorial"  "No, it was not as I don't follow slow tutorials."
-clin new "birthday of my family" "Mom on 2nd Februray, Dad on 15th August."
+clin new "birthday of my family" "Mom on 2nd February, Dad on 15th August."
 clin new "What is photosynthesis" "The process by which plants make food for themselves"
 clin view
 clin pin "Was CLIN made with tutorial"
