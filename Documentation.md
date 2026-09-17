@@ -128,7 +128,8 @@ sudo chmod +x /usr/local/bin/clin
 echo "[]" > ~/.clin_notes.json
 ```
 
-[!CAUTION] All your previous notes will be reduced to atoms.
+- [!CAUTION]
+- All your previous notes will be reduced to atoms.
 
 ### Important Notes:
 - if  you use zsh instead of bash then every error and command mentioned above will replace "bash" with "zsh" just as you saw in the Permission Denied Error.
