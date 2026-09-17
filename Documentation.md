@@ -128,7 +128,7 @@ sudo chmod +x /usr/local/bin/clin
 echo "[]" > ~/.clin_notes.json
 ```
 
-- [!CAUTION]
+- **Caution**
 - All your previous notes will be reduced to atoms.
 
 ### Important Notes:
